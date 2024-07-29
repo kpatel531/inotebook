@@ -2,12 +2,18 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 import noteContext from '../context/notes/noteContext';
 import Noteitem from './Noteitem';
 import AddNote from './AddNote';
+import { useNavigate } from 'react-router-dom';
 
-const Notes = () => {
+const Notes = (props) => {
     const context = useContext(noteContext);
     const {notes, getNotes, editNote} = context;
+    let history = useNavigate();
     useEffect(() => {
-        getNotes()
+        if(localStorage.getItem('token')) {
+            getNotes()
+        } else {
+            history("/login");
+        }
         // eslint-disable-next-line
     }, [])
     const ref = useRef(null)
@@ -31,13 +37,14 @@ const Notes = () => {
     const handleClick = (e) => {
         editNote({_id: note.id, etitle: note.etitle, edescription: note.edescription, etag: note.etag});
         refClose.current.click();
+        props.showAlert("Update successfully", "success");
     }
     const onChange = (e) => {
         setNote({...note, [e.target.name]: e.target.value});
     }
     return (
         <>
-        <AddNote/>
+        <AddNote showAlert={props.showAlert}/>
             <button ref={ref} type="button" className="btn btn-primary d-none" data-bs-toggle="modal" data-bs-target="#exampleModal">Lunch Edit Form Btn</button>
             <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div className="modal-dialog">
@@ -75,7 +82,7 @@ const Notes = () => {
         {!notes.length && "No notes to display"}
         </div>
         {notes.map((note, index) => {
-            return <Noteitem key={index} updateNote={updateNote} note={note} />
+            return <Noteitem key={index} updateNote={updateNote} note={note} showAlert={props.showAlert} />
         })}
         </div>
         </>   
